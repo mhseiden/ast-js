@@ -57,8 +57,16 @@ do ->
       children = _.map @children, (c) -> c.print(withID,1+depth)
       "\n#{prefix}#{@toString(withID)}#{children.join("")}"
 
-    # rely on underscore's "deep equals" by default
-    sameResult: (o) -> _.isEqual(@,o)
+    # rely on underscore's "deep equals" by default (but remove nodeid)
+    sameResult: (o) ->
+      nodeid_1 = @nodeid
+      nodeid_2 = o.nodeid
+      @nodeid = o.nodeid = 0
+      try
+        _.isEqual(@,o)
+      finally
+        @nodeid   = nodeid_1
+        o.nodeid  = nodeid_2
 
     # creates a shallow copy of this node
     copy: (args = @args, children = @children) ->
@@ -111,6 +119,7 @@ do ->
     # static helper to transform a single node
     @transform: (node,f,down) ->
       if down
+        afterF = f(node)
         result = if afterF.sameResult(node) then node else afterF
         return TreeNode.transformChildren(result,f,down)
       else
