@@ -16,8 +16,8 @@ do ->
     constructor: (@batches = []) ->
 
     execute: (tree0) ->
-      inner = (tree,batch) -> batch.execute(tree)
-      _.foldl(@batches,inner,tree0,{})
+      inner = (tree,batch) -> return batch.execute(tree)
+      return _.foldl(@batches,inner,tree0,{})
 
 
   class RuleBatch
@@ -28,7 +28,7 @@ do ->
       result = null
 
       for i in [0...@iterations] by 1
-        inner = (tree,rule) -> rule.execute(tree)
+        inner = (tree,rule) -> return rule.execute(tree)
         result = _.foldl(@rules,inner,prior,{})
         return result if result.sameResult(prior)
         prior = result
@@ -37,7 +37,7 @@ do ->
 
   class Rule
     constructor: ->
-    execute: (tree) -> tree
+    execute: (tree) -> return tree
 
   class TreeNode
     # [node ctor factory, node args, node children]

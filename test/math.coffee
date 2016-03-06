@@ -23,6 +23,9 @@ class Floor extends UnaryNode
 class Ln extends UnaryNode
   constructor: (c) -> super(Ln,[],c)
 
+class Exp extends UnaryNode
+  constructor: (c) -> super(Exp,[],c)
+
 class Log10 extends UnaryNode
   constructor: (c) -> super(Log10,[],c)
 
@@ -44,11 +47,11 @@ class Div extends BinaryNode
 class Mod extends BinaryNode
   constructor: (l,r) -> super(Mod,[],l,r)
 
-class Exp extends BinaryNode
-  constructor: (l,r) -> super(Exp,[],l,r)
+class Pow extends BinaryNode
+  constructor: (l,r) -> super(Pow,[],l,r)
 
 class LogB extends BinaryNode
-  constructor: (l,r) -> super(Log10,[],l,r)
+  constructor: (l,r) -> super(LogB,[],l,r)
 
 class RoundB extends BinaryNode
   constructor: (l,r) -> super(RoundB,[],l,r)
@@ -63,6 +66,8 @@ class RewriteUnaryToBinaryNode extends Rule
         return new RoundB(child,new Literal(0))
       if node instanceof Log10
         return new LogB(child,new Literal(10))
+      if node instanceof Exp
+        return new Pow(new Literal(Math.E),child)
 
       return node
 
@@ -109,15 +114,23 @@ class EvalBinaryNodes extends Rule
           return new Literal(l*r)
         if node instanceof Div
           return new Literal(l/r)
+        if node instanceof LogB
+          return new Literal(Math.log10(l) / Math.log10(r))
+        if node instanceof RoundB
+          return new Literal(Math.round(l,r))
+        if node instanceof Mod
+          return new Literal(l % r)
+        if node instanceof Pow
+          return new Literal(Math.pow(l,r))
 
       return node
 
 class EvaluationBatch extends RuleBatch
   constructor: (iterations) ->
     super([
-      new RewriteUnaryToBinaryNode(),
       new EvalUnaryNodes(),
-      new EvalBinaryNodes()
+      new EvalBinaryNodes(),
+      new RewriteUnaryToBinaryNode()
     ], iterations)
 
 class MathExecutor extends RuleExecutor
@@ -145,7 +158,8 @@ assert = require("assert")
 SAME = yes
 DIFF = no
 check = (lhs,rhs,expected = SAME) ->
-  assert(expected is lhs.sameResult(rhs))
+  if not expected is lhs.sameResult(rhs)
+    assert.equal(lhs.toString(),rhs.toString())
 
 describe "Arithmetic Evaluation", ->
   describe "Leaf Operators", ->
@@ -194,8 +208,59 @@ describe "Arithmetic Evaluation", ->
       expr = new Ceil(new Ln(new Literal(10)))
       check THREE, EVAL_1.execute(expr), SAME
 
-    it "should be correct for log10", ->
+    it "should be correct for log10 (eval[1])", ->
       expr = new Log10(new Literal(10))
-      check ONE, EVAL_1.execute(expr), SAME
+      check ONE, EVAL_1.execute(expr), DIFF
+
+    it "should be correct for log10 (eval[10])", ->
+      expr = new Log10(new Literal(10))
+      check ONE, EVAL_10.execute(expr), SAME
+
+    it "should be correct for round (eval[1])", ->
+      expr = new Round(new Literal(1.1))
+      check ONE, EVAL_1.execute(expr), DIFF
+
+    it "should be correct for round (eval[10])", ->
+      expr = new Round(new Literal(1.1))
+      check ONE, EVAL_10.execute(expr), SAME
+
+    it "should be correct for exp (eval[1])", ->
+      expr = new Exp(ONE)
+      check new Literal(Math.E), EVAL_1.execute(expr), DIFF
+
+    it "should be correct for exp (eval[10])", ->
+      expr = new Exp(ONE)
+      check new Literal(Math.E), EVAL_10.execute(expr), SAME
 
   describe "Binary Operators", ->
+    it "should be correct for add", ->
+      expr = new Add(ONE,TWO)
+      check THREE, EVAL_1.execute(expr), SAME
+
+    it "should be correct for sub", ->
+      expr = new Sub(FIVE,ONE)
+      check FOUR, EVAL_1.execute(expr), SAME
+
+    it "should be correct for mul", ->
+      expr = new Mul(THREE,TWO)
+      check new Literal(6), EVAL_1.execute(expr), SAME
+
+    it "should be correct for div", ->
+      expr = new Div(new Literal(6),TWO)
+      check THREE, EVAL_1.execute(expr), SAME
+
+    it "should be correct for mod", ->
+      expr = new Mod(THREE,TWO)
+      check ONE, EVAL_1.execute(expr), SAME
+
+    it "should be correct for pow", ->
+      expr = new Pow(THREE,TWO)
+      check new Literal(9), EVAL_1.execute(expr), SAME
+
+    it "should be correct for logb", ->
+      expr = new LogB(new Literal(100),new Literal(10))
+      check TWO, EVAL_1.execute(expr), SAME
+
+    it "should be correct for roundb", ->
+      expr = new RoundB(new Literal(1.6), ZERO)
+      check TWO, EVAL_1.execute(expr), SAME
