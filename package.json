@@ -1,0 +1,17 @@
+{
+  "name": "treenode",
+  "version": "1.0.0",
+  "description": "A building block for ASTs / Plans based on Apache Spark's TreeNode",
+  "main": "treenode.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Max Seiden",
+  "license": "MIT",
+  "dependencies": {
+    "underscore": "^1.8.3"
+  }
+}
