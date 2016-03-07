@@ -1,6 +1,6 @@
 {
   "name": "ast-js",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A building block for ASTs / Plans based on Apache Spark's TreeNode",
   "main": "treenode.js",
   "directories": {
