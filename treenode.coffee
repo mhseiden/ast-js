@@ -57,16 +57,12 @@ do ->
       children = _.map @children, (c) -> c.print(withID,1+depth)
       "\n#{prefix}#{@toString(withID)}#{children.join("")}"
 
-    # rely on underscore's "deep equals" by default (but remove nodeid)
+    # rely on underscore's "deep equals" by default
     sameResult: (o) ->
-      nodeid_1 = @nodeid
-      nodeid_2 = o.nodeid
-      @nodeid = o.nodeid = 0
-      try
-        _.isEqual(@,o)
-      finally
-        @nodeid   = nodeid_1
-        o.nodeid  = nodeid_2
+      return no unless _.isEqual(@ctor,o.ctor)
+      return no unless _.isEqual(@args,o.args)
+      zipped = _.zip @children, o.children
+      return _.all zipped, ([l,r]) -> l.sameResult(r)
 
     # creates a shallow copy of this node
     copy: (args = @args, children = @children) ->
