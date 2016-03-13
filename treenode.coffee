@@ -12,6 +12,17 @@ do ->
   _ = root._ || require? and require("underscore")
 
 
+  class Planner
+    constructor: (@strategies) ->
+      _.map @strategies, (s) -> s.planner = @
+
+    plan: (tree) -> _.map(@strategies, (s) -> s.execute(tree)).flatten
+    planLater: (tree) -> plan(tree)[0]
+
+  class PlannerStrategy
+    constructor: (@planner = null) ->
+    execute: (tree) -> []
+
   class RuleExecutor
     constructor: (@batches = []) ->
 
@@ -106,7 +117,7 @@ do ->
     # filter the nodes in the tree using predicate f
     filter: (f) ->
       @flatMap (node) -> if f(node) then [node] else []
-      
+
     # transforms this node and its children using the given fn
     transformUp: (f) -> @transform(f,no)
     transformDown: (f) -> @transform(f,yes)
@@ -149,12 +160,20 @@ do ->
   if module? and not module.nodeType
     exports = module.exports = {}
   else
-    exports = root
+    exports = root.astjs = {}
 
-  exports.Rule          = Rule
-  exports.TreeNode      = TreeNode
-  exports.LeafNode      = LeafNode
-  exports.BinaryNode    = BinaryNode
-  exports.UnaryNode     = UnaryNode
-  exports.RuleBatch     = RuleBatch
-  exports.RuleExecutor  = RuleExecutor
+  # ast nodes
+  exports.TreeNode        = TreeNode
+  exports.LeafNode        = LeafNode
+  exports.UnaryNode       = UnaryNode
+  exports.BinaryNode      = BinaryNode
+
+  # rewrite rule classes
+  exports.Rule            = Rule
+  exports.RuleBatch       = RuleBatch
+  exports.RuleExecutor    = RuleExecutor
+
+  # planner classes
+  exports.Planner         = Planner
+  exports.PlannerStrategy = PlannerStrategy
+
