@@ -1,7 +1,17 @@
 _ = require("underscore")
 exports = module.exports = {}
 
-{ TreeNode, UnaryNode, LeafNode, BinaryNode, Rule, RuleExecutor, RuleBatch } = require("../treenode.coffee")
+{
+  TreeNode
+  UnaryNode
+  LeafNode
+  BinaryNode
+  Rule
+  RuleExecutor
+  RuleBatch
+  Planner
+  PlannerStrategy
+} = require("../treenode.coffee")
 
 exports.Literal =
 class Literal extends LeafNode
@@ -159,3 +169,83 @@ class EvaluationBatch extends RuleBatch
 exports.MathExecutor =
 class MathExecutor extends RuleExecutor
   constructor: (iterations) -> super([new EvaluationBatch(iterations)])
+
+exports.TextPlanner =
+class TextPlanner extends Planner
+  constructor: ->
+    super([
+      new LeafAsText(),
+      new UnaryAsText(),
+      new BinaryAsText()
+    ])
+
+exports.BinaryAsText =
+class BinaryAsText extends PlannerStrategy
+  constructor: -> super()
+
+  execute: (tree) ->
+    unless tree instanceof BinaryNode
+      return []
+
+    lInner  = @planner.planLater(tree.children[0])
+    rInner  = @planner.planLater(tree.children[1])
+    buildOp = (op) -> ["(#{lInner}#{op}#{rInner})"]
+    buildFn = (fn) -> ["#{fn}(#{lInner},#{rInner})"]
+
+    if tree instanceof Add
+      return buildOp("+")
+    if tree instanceof Sub
+      return buildOp("-")
+    if tree instanceof Mul
+      return buildOp("*")
+    if tree instanceof Div
+      return buildOp("/")
+    if tree instanceof Mod
+      return buildOp("%")
+    if tree instanceof Pow
+      return buildFn("pow")
+    if tree instanceof LogB
+      return buildFn("log")
+    if tree instanceof RoundB
+      return buildFn("round")
+
+exports.UnaryAsText =
+class UnaryAsText extends PlannerStrategy
+  constructor: -> super()
+
+  execute: (tree) ->
+    unless tree instanceof UnaryNode
+      return []
+
+    inner = @planner.planLater(tree.children[0])
+    build = (name) -> ["#{name}(#{inner})"]
+
+    if tree instanceof Abs
+      return build("abs")
+    if tree instanceof Neg
+      return build("neg")
+    if tree instanceof Sqrt
+      return build("sqrt")
+    if tree instanceof Ceil
+      return build("ceil")
+    if tree instanceof Floor
+      return build("floor")
+    if tree instanceof Ln
+      return build("ln")
+    if tree instanceof Exp
+      return build("exp")
+    if tree instanceof Log10
+      return build("log10")
+    if tree instanceof Round
+      return build("round")
+
+exports.LeafAsText =
+class LeafAsText extends PlannerStrategy
+  constructor: -> super()
+
+  execute: (tree) ->
+    unless tree instanceof LeafNode
+      return []
+
+    if tree instanceof Literal
+      return ["#{tree.args[0]}"]

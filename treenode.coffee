@@ -14,13 +14,18 @@ do ->
 
   class Planner
     constructor: (@strategies) ->
-      _.map @strategies, (s) -> s.planner = @
+      _.map @strategies, (s) => s.planner = @
 
-    plan: (tree) -> _.map(@strategies, (s) -> s.execute(tree)).flatten
-    planLater: (tree) -> plan(tree)[0]
+    plan: (tree) ->
+      execute = (s) -> s.execute(tree)
+      planned = _.map(@strategies,execute)
+      _.flatten planned
+
+    planLater: (tree) ->
+      @plan(tree)[0]
 
   class PlannerStrategy
-    constructor: (@planner = null) ->
+    constructor: ->
     execute: (tree) -> []
 
   class RuleExecutor
