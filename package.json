@@ -3,6 +3,10 @@
   "version": "1.0.4",
   "description": "A building block for ASTs / Plans based on Apache Spark's TreeNode",
   "main": "treenode.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mhseiden/ast-js"
+  },
   "directories": {
     "test": "test"
   },
