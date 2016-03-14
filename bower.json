@@ -1,7 +1,7 @@
 {
   "name": "ast-js",
   "description": "A building block for ASTs / Plans based on Apache Spark's TreeNode",
-  "main": "treenode.js",
+  "main": "lib/treenode.js",
   "authors": [
     "Max Seiden"
   ],
@@ -11,8 +11,11 @@
   "ignore": [
     "**/.*",
     "node_modules",
+    "version.coffee",
+    "compile.sh",
     "bower_components",
     "test",
+    "npm-debug.log",
     "tests"
   ]
 }

@@ -11,7 +11,7 @@ exports = module.exports = {}
   RuleBatch
   Planner
   PlannerStrategy
-} = require("../treenode.coffee")
+} = require("../")
 
 exports.Literal =
 class Literal extends LeafNode
