@@ -32,10 +32,10 @@ do ->
   # hold a local reference to underscore
   _ = root._ || require? and require("underscore")
 
-
   class Planner
     constructor: (@strategies) ->
       _.map @strategies, (s) => s.planner = @
+      @planned = {} # track the trees we've planned
 
     plan: (tree) ->
       execute = (s) -> s.execute(tree)
@@ -43,7 +43,13 @@ do ->
       _.flatten planned
 
     planLater: (tree) ->
-      @plan(tree)[0]
+      plan = @planned[tree.nodeid]
+      unless plan?
+        if(plan = @plan(tree)[0])?
+          @planned[tree.nodeid] = plan unless (tree.nondeterministic is true)
+        else
+          throw new Error("unable to plan tree: #{tree.print()}")
+      return plan
 
   class PlannerStrategy
     constructor: ->
@@ -55,7 +61,6 @@ do ->
     execute: (tree0) ->
       inner = (tree,batch) -> return batch.execute(tree)
       return _.foldl(@batches,inner,tree0,{})
-
 
   class RuleBatch
     constructor: (@rules,@iterations) ->
@@ -70,7 +75,6 @@ do ->
         return result if result.sameResult(prior)
         prior = result
       return result
-
 
   class Rule
     constructor: ->

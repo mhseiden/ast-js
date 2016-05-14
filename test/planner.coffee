@@ -20,6 +20,20 @@ planFirst = (tree) -> PLANNER.plan(tree)[0]
 assert = require("assert")
 
 describe "Expression Rendering (via planner)", ->
+
+  describe "Render Once Per NodeID", ->
+    it "should not replan a deterministic node", ->
+      random = new Algebra.Random()
+      random.nondeterministic = no
+      split = planFirst(new Add(random,random)).replace(/[\(\)]/g, "").split("+")
+      assert.equal split[0], split[1]
+
+    it "should replan a nondeterministic node", ->
+      random = new Algebra.Random()
+      random.nondeterministic = yes
+      split = planFirst(new Add(random,random)).split("+")
+      assert.notEqual split[0], split[1]
+
   describe "Planner Construction", ->
     it "should have strategies", ->
       assert PLANNER.strategies?

@@ -17,6 +17,10 @@ exports.Literal =
 class Literal extends LeafNode
   constructor: (v) -> super(Literal,[v])
 
+exports.Random =
+class Random extends LeafNode
+  constructor: -> super(Random,[])
+
 exports.Abs =
 class Abs extends UnaryNode
   constructor: (c) -> super(Abs,[],c)
@@ -249,3 +253,6 @@ class LeafAsText extends PlannerStrategy
 
     if tree instanceof Literal
       return ["#{tree.args[0]}"]
+
+    if tree instanceof Random
+      return ["#{Math.random()}"]
