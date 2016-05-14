@@ -17,5 +17,6 @@
     "test",
     "npm-debug.log",
     "tests"
-  ]
+  ],
+  "version": "1.0.6"
 }
