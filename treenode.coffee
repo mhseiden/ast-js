@@ -40,7 +40,7 @@ do ->
     plan: (tree) ->
       execute = (s) -> s.execute(tree)
       planned = _.map(@strategies,execute)
-      _.flatten planned
+      _.filter _.flatten(planned), (n) -> n?
 
     planLater: (tree) ->
       plan = @planned[tree.nodeid]
@@ -72,7 +72,7 @@ do ->
       for i in [0...@iterations] by 1
         inner = (tree,rule) -> return rule.execute(tree)
         result = _.foldl(@rules,inner,prior,{})
-        return result if result.sameResult(prior)
+        return prior if result.sameResult(prior)
         prior = result
       return result
 
